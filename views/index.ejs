@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Netflix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'netflix-red': '#e50914',
+                        'netflix-black': '#141414',
+                        'netflix-dark-gray': '#181818',
+                        'netflix-light-gray': '#b3b3b3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-netflix-black text-white font-sans">
+    <header class="fixed w-full flex justify-between items-center px-10 py-5 bg-black/80 z-50 transition-colors duration-300" id="header">
+        <a href="/" class="text-netflix-red text-2xl font-bold no-underline">MINIFLIX</a>
+        <div class="flex items-center">
+            <a href="/upload" class="bg-netflix-red hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors">
+                <i class="fas fa-upload mr-2"></i> Upload
+            </a>
+        </div>
+    </header>
+
+    <section class="p-10 pt-24">
+        <div class="mb-10">
+            <h2 class="text-2xl mb-5">Videos</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div class="relative overflow-hidden rounded-lg shadow-lg cursor-pointer group bg-netflix-dark-gray">
+                    <div class="relative">
+                        <img src="public/thumbnail-default.jpg" alt="Movie 1" class="w-full h-[300px] object-cover transition-opacity duration-300 group-hover:opacity-80">
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4 transform translate-y-full transition-transform duration-300 ease-in-out group-hover:translate-y-0">
+                        <h3 class="text-base font-bold text-white">Title 1</h3>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+</body>
+</html>
