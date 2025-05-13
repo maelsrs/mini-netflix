@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const ffmpeg = require('fluent-ffmpeg');
+const db = require('./db/database.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -23,11 +25,10 @@ const storage = multer.diskStorage({
 const fileFilter = function (req, file, cb) {
     if (file.mimetype === 'video/mp4' || 
         file.mimetype === 'video/webm' || 
-        file.mimetype === 'video/ogg' || 
         file.mimetype === 'video/quicktime') {
         cb(null, true);
     } else {
-        req.fileValidationError = 'Only .mp4, .webm, .ogg, and .mov formats are allowed!';
+        req.fileValidationError = 'Only .mp4, .webm, and .mov formats are allowed!';
         cb(null, false);
     }
 };
@@ -40,6 +41,20 @@ const upload = multer({
     }
 });
 
+function generateThumbnail(videoPath) {
+    return new Promise((resolve, reject) => {
+        const thumbnailPath = videoPath.replace(/\.[^/.]+$/, '.png');
+        ffmpeg(videoPath)
+            .screenshots({
+                timestamps: ['00:00:01'],
+                filename: path.basename(thumbnailPath),
+                folder: path.dirname(thumbnailPath),
+            })
+            .on('end', () => resolve(thumbnailPath))
+            .on('error', (err) => reject(err));
+    });
+}
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -48,14 +63,15 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
-    res.render('index.ejs');
+    const videos = db.getAllVideos();
+    res.render('index', { videos });
 });
 
 app.get('/upload', (req, res) => {
     res.render('upload.ejs');
 });
 
-app.post('/upload', upload.single('video'), (req, res) => {
+app.post('/upload', upload.single('video'), async (req, res) => {
     try {
         if (req.fileValidationError) {
             return res.render('upload.ejs', { error: req.fileValidationError });
@@ -65,8 +81,14 @@ app.post('/upload', upload.single('video'), (req, res) => {
             return res.render('upload.ejs', { error: 'Please select a video file to upload' });
         }
 
+        try {
+            await generateThumbnail(req.file.path);
+        } catch (error) {
+            console.error('Thumbnail generation error:', error);
+        }
+
         const videoInfo = {
-            title: req.body.title || 'Untitled Video',
+            title: req.body.title || 'No title provided',
             path: req.file.path,
             filename: req.file.filename,
             originalname: req.file.originalname,
@@ -74,6 +96,7 @@ app.post('/upload', upload.single('video'), (req, res) => {
             mimetype: req.file.mimetype
         };
 
+        db.insertVideo(videoInfo);
         console.log('Video uploaded:', videoInfo);
 
         return res.render('upload.ejs', { 
@@ -84,6 +107,17 @@ app.post('/upload', upload.single('video'), (req, res) => {
         console.error('Upload error:', error);
         return res.render('upload.ejs', { error: error.message });
     }
+});
+
+app.get('/video/:id', (req, res) => {
+    const videoId = parseInt(req.params.id);
+    const video = db.getVideoById(videoId);
+    
+    if (!video) {
+        return res.status(404).send('Video not found');
+    }
+    
+    res.render('video.ejs', { video });
 });
 
 app.use((err, req, res, next) => {

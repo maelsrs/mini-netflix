@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= video.title %> - Mini Netflix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'netflix-red': '#e50914',
+                        'netflix-black': '#141414',
+                        'netflix-dark-gray': '#181818',
+                        'netflix-light-gray': '#b3b3b3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-netflix-black text-white font-sans">
+    <header class="fixed w-full flex justify-between items-center px-10 py-5 bg-black/80 z-50 transition-colors duration-300" id="header">
+        <a href="/" class="text-netflix-red text-2xl font-bold no-underline">MINIFLIX</a>
+        <div class="flex items-center">
+            <a href="/upload" class="bg-netflix-red hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors">
+                <i class="fas fa-upload mr-2"></i> Upload
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-24">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="bg-netflix-dark-gray rounded-lg shadow-lg overflow-hidden">
+                <div class="relative aspect-video">
+                    <video 
+                        id="video"
+                        class="w-full h-full"
+                        controls
+                        autoplay
+                        src="/uploads/<%= video.filename %>"
+                    ></video>
+                </div>
+                
+                <div class="p-6">
+                    <h1 class="text-3xl font-bold mb-4"><%= video.title %></h1>
+                    
+                    <div class="flex items-center text-netflix-light-gray text-sm mb-6">
+                        <span class="mr-4">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <%= new Date(video.upload_date).toLocaleDateString() %>
+                        </span>
+                        <span>
+                            <i class="fas fa-file-video mr-2"></i>
+                            <%= (video.size / (1024 * 1024)).toFixed(2) %> MB
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html> 
