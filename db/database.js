@@ -42,10 +42,17 @@ function getVideoById(id) {
     return statement.get(id);
 }
 
+function deleteVideoById(id) {
+    const statement = db.prepare('DELETE FROM videos WHERE id = ?');
+    const info = statement.run(id);
+    return info.changes > 0;
+}
+
 initializeDatabase();
 
 module.exports = {
     insertVideo,
     getAllVideos,
-    getVideoById
+    getVideoById,
+    deleteVideoById
 };

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Mini Netflix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'netflix-red': '#e50914',
+                        'netflix-black': '#141414',
+                        'netflix-dark-gray': '#181818',
+                        'netflix-light-gray': '#b3b3b3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-netflix-black text-white font-sans">
+    <header class="fixed w-full flex justify-between items-center px-10 py-5 bg-black/80 z-50 transition-colors duration-300" id="header">
+        <a href="/" class="text-netflix-red text-2xl font-bold no-underline">MINIFLIX</a>
+        <div class="flex items-center">
+            <a href="/" class="text-white hover:text-netflix-red mr-4 transition-colors">
+                <i class="fas fa-home mr-2"></i> Home
+            </a>
+            <a href="/upload" class="bg-netflix-red hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center transition-colors">
+                <i class="fas fa-upload mr-2"></i> Upload
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-10">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold">Admin Panel</h1>
+            </div>
+
+            <% if (message) { %>
+                <div class="mb-6 p-4 rounded <%= message.type === 'success' ? 'bg-green-800/50 text-green-200' : 'bg-red-800/50 text-red-200' %>">
+                    <%= message.text %>
+                </div>
+            <% } %>
+
+            <div class="bg-netflix-dark-gray rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4">Manage Videos</h2>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="border-b border-gray-700">
+                                <tr>
+                                    <th class="py-3 px-4">Thumbnail</th>
+                                    <th class="py-3 px-4">Title</th>
+                                    <th class="py-3 px-4">Upload Date</th>
+                                    <th class="py-3 px-4">Size</th>
+                                    <th class="py-3 px-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (videos && videos.length > 0) { %>
+                                    <% videos.forEach(video => { %>
+                                        <tr class="border-b border-gray-700 hover:bg-gray-800/30 transition-colors">
+                                            <td class="py-4 px-4">
+                                                <img 
+                                                    class="w-24 h-16 object-cover rounded" 
+                                                    src="/uploads/<%= video.filename.replace(/\.[^/.]+$/, '.png') %>" 
+                                                    alt="<%= video.title %>"
+                                                    onerror="this.onerror=null; this.src='/public/thumbnail-default.jpg';"
+                                                >
+                                            </td>
+                                            <td class="py-4 px-4">
+                                                <a href="/video/<%= video.id %>" class="text-white hover:text-netflix-red transition-colors">
+                                                    <%= video.title %>
+                                                </a>
+                                            </td>
+                                            <td class="py-4 px-4 text-netflix-light-gray">
+                                                <%= new Date(video.upload_date).toLocaleDateString() %>
+                                            </td>
+                                            <td class="py-4 px-4 text-netflix-light-gray">
+                                                <%= (video.size / (1024 * 1024)).toFixed(2) %> MB
+                                            </td>
+                                            <td class="py-4 px-4">
+                                                <form action="/admin/delete/<%= video.id %>" method="POST">
+                                                    <button type="submit" class="text-netflix-red hover:text-red-700 transition-colors">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="py-4 px-4 text-center text-netflix-light-gray">
+                                            <i class="fas fa-film text-2xl mb-2"></i>
+                                            <p>No videos available</p>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html> 

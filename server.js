@@ -3,9 +3,13 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
+const cookieParser = require('cookie-parser');
 const db = require('./db/database.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const ADMIN_COOKIE_NAME = 'role';
+const ADMIN_COOKIE_VALUE = 'admin';
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -55,10 +59,19 @@ function generateThumbnail(videoPath) {
     });
 }
 
+function isAdmin(req, res, next) {
+    if (req.cookies && req.cookies[ADMIN_COOKIE_NAME] === ADMIN_COOKIE_VALUE) {
+        next();
+    } else {
+        res.redirect('/');
+    }
+}
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -118,6 +131,59 @@ app.get('/video/:id', (req, res) => {
     }
     
     res.render('video.ejs', { video });
+});
+
+app.get('/admin', isAdmin, (req, res) => {
+    const videos = db.getAllVideos();
+    res.render('admin.ejs', { videos, message: null });
+});
+
+app.post('/admin/delete/:id', isAdmin, (req, res) => {
+    const videoId = parseInt(req.params.id);
+    const video = db.getVideoById(videoId);
+    
+    if (!video) {
+        return res.render('admin.ejs', { 
+            videos: db.getAllVideos(),
+            message: { type: 'error', text: 'Video not found' }
+        });
+    }
+    
+    try {
+        if (fs.existsSync(video.filepath)) {
+            fs.unlinkSync(video.filepath);
+        }
+        
+        const thumbnailPath = video.filepath.replace(/\.[^/.]+$/, '.png');
+        if (fs.existsSync(thumbnailPath)) {
+            fs.unlinkSync(thumbnailPath);
+        }
+        
+        const deleted = db.deleteVideoById(videoId);
+        
+        if (deleted) {
+            return res.render('admin.ejs', { 
+                videos: db.getAllVideos(),
+                message: { type: 'success', text: 'Video deleted successfully' }
+            });
+        } else {
+            return res.render('admin.ejs', { 
+                videos: db.getAllVideos(),
+                message: { type: 'error', text: 'Error deleting video from database' }
+            });
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        return res.render('admin.ejs', { 
+            videos: db.getAllVideos(),
+            message: { type: 'error', text: `Error: ${error.message}` }
+        });
+    }
+});
+
+app.post('/admin/logout', isAdmin, (req, res) => {
+    res.clearCookie(ADMIN_COOKIE_NAME);
+    res.redirect('/admin/login');
 });
 
 app.use((err, req, res, next) => {
