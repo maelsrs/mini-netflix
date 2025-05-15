@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= video.title %> - Mini Netflix</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .plyr {
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+        }
+        .player-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+    </style>
     <script>
         tailwind.config = {
             theme: {
@@ -34,14 +47,17 @@
     <main class="pt-24">
         <div class="max-w-6xl mx-auto px-4">
             <div class="bg-netflix-dark-gray rounded-lg shadow-lg overflow-hidden">
-                <div class="relative aspect-video">
-                    <video 
+                <div class="relative player-container">
+                    <video id="player" playsinline controls autoplay data-poster="/uploads/<%= video.filename.replace(/\.[^/.]+$/, '.png') %>">
+                        <source src="/uploads/<%= video.filename %>" type="video/mp4"/>
+                    </video>
+                    <!-- <video 
                         id="video"
                         class="w-full h-full"
                         controls
                         autoplay
                         src="/uploads/<%= video.filename %>"
-                    ></video>
+                    ></video> -->
                 </div>
                 
                 <div class="p-6">
@@ -61,5 +77,14 @@
             </div>
         </div>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const player = new Plyr('#player', {
+                ratio: '16:9',
+                fullscreen: { enabled: true }
+            });
+        });
+    </script>
 </body>
 </html> 
