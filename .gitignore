@@ -139,3 +139,4 @@ pnpm-lock.yaml
 
 uploads/*
 miniflix.db
+.env

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
@@ -5,11 +6,13 @@ const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
 const cookieParser = require('cookie-parser');
 const db = require('./db/database.js');
+const jwt = require('jsonwebtoken');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-const ADMIN_COOKIE_NAME = 'role';
-const ADMIN_COOKIE_VALUE = 'admin';
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'jwt';
+const ADMIN_JWT_COOKIE = 'admin_jwt';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin"
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -60,11 +63,19 @@ function generateThumbnail(videoPath) {
 }
 
 function isAdmin(req, res, next) {
-    if (req.cookies && req.cookies[ADMIN_COOKIE_NAME] === ADMIN_COOKIE_VALUE) {
-        next();
-    } else {
-        res.redirect('/');
+    const token = req.cookies[ADMIN_JWT_COOKIE];
+    if (!token) {
+        return res.redirect('/admin/login');
     }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded && decoded.role === 'admin') {
+            req.admin = decoded;
+            return next();
+        }
+    } catch (err) {
+    }
+    return res.redirect('/admin/login');
 }
 
 app.set('view engine', 'ejs');
@@ -181,8 +192,23 @@ app.post('/admin/delete/:id', isAdmin, (req, res) => {
     }
 });
 
+app.get('/admin/login', (req, res) => {
+    res.render('admin-login.ejs');
+});
+
+app.post('/admin/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === ADMIN_PASSWORD) {
+        const token = jwt.sign({ role: 'admin', username: 'admin' }, JWT_SECRET, { expiresIn: '2h' });
+        res.cookie(ADMIN_JWT_COOKIE, token, { httpOnly: true, sameSite: 'lax', secure: false });
+        return res.redirect('/admin');
+    } else {
+        return res.render('admin-login.ejs', { error: 'Invalid username or password' });
+    }
+});
+
 app.post('/admin/logout', isAdmin, (req, res) => {
-    res.clearCookie(ADMIN_COOKIE_NAME);
+    res.clearCookie(ADMIN_JWT_COOKIE);
     res.redirect('/admin/login');
 });
 

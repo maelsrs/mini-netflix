@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Mini Netflix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'netflix-red': '#e50914',
+                        'netflix-black': '#141414',
+                        'netflix-dark-gray': '#181818',
+                        'netflix-light-gray': '#b3b3b3',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-netflix-black text-white font-sans min-h-screen flex items-center justify-center">
+    <div class="bg-netflix-dark-gray p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-3xl font-bold mb-6 text-center">Admin Login</h1>
+        <% if (locals.error) { %>
+            <div class="bg-red-500/20 border border-red-500 text-white p-4 mb-6 rounded">
+                <p><i class="fas fa-exclamation-circle mr-2"></i> <%= error %></p>
+            </div>
+        <% } %>
+        <form action="/admin/login" method="POST" class="space-y-6">
+            <div>
+                <label for="username" class="block text-netflix-light-gray mb-2">Username</label>
+                <input type="text" id="username" name="username" required class="w-full p-3 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-netflix-red" placeholder="admin">
+            </div>
+            <div>
+                <label for="password" class="block text-netflix-light-gray mb-2">Password</label>
+                <input type="password" id="password" name="password" required class="w-full p-3 bg-[#333] rounded focus:outline-none focus:ring-2 focus:ring-netflix-red" placeholder="password">
+            </div>
+            <div class="pt-4">
+                <button type="submit" class="w-full py-3 bg-netflix-red text-white rounded font-bold hover:bg-red-700 transition-colors">
+                    Login
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html> 
